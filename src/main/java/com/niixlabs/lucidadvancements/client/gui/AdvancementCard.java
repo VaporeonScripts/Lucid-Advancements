@@ -48,7 +48,7 @@ public class AdvancementCard implements Comparable<AdvancementCard> {
         return this.height;
     }
 
-    public void render(GuiGraphics guiGraphics, Font font, int x, int y, int width) {
+    public void renderBackgroundAndText(GuiGraphics guiGraphics, Font font, int x, int y, int width) {
         int bgColor1 = 0xAA1A1A1A;
         int bgColor2 = 0xAA121212;
         int borderColor = 0x882A2A2A;
@@ -82,13 +82,11 @@ public class AdvancementCard implements Comparable<AdvancementCard> {
         guiGraphics.fill(x, y + this.height - 1, x + width, y + this.height, borderColor);
         guiGraphics.fill(x + width - 1, y, x + width, y + this.height, borderColor);
 
-        int iconY = y + (this.height / 2) - 8;
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0, 0, 50);
 
-        if (!this.hidden) {
-            guiGraphics.renderItem(this.display.getIcon(), x + 12, iconY);
-        } else {
+        if (this.hidden) {
+            int iconY = y + (this.height / 2) - 8;
             guiGraphics.drawCenteredString(font, "?", x + 20, iconY + 4, 0xFF666666);
         }
 
@@ -101,8 +99,17 @@ public class AdvancementCard implements Comparable<AdvancementCard> {
         }
 
         guiGraphics.drawString(font, statusIcon, x + width - 20, y + (this.height / 2) - 4, statusColor, true);
-
         guiGraphics.pose().popPose();
+    }
+
+    public void renderIcon(GuiGraphics guiGraphics, int x, int y) {
+        if (!this.hidden) {
+            int iconY = y + (this.height / 2) - 8;
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(0, 0, 50);
+            guiGraphics.renderItem(this.display.getIcon(), x + 12, iconY);
+            guiGraphics.pose().popPose();
+        }
     }
 
     @Nullable
