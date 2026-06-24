@@ -406,6 +406,11 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
                 for (SidebarNodeCache cache : this.cachedSidebarNodes) {
                     if (mouseY >= sY && mouseY <= sY + 34) {
                         this.clientAdvancements.setSelectedTab(cache.node.holder(), true);
+
+                        this.selectedRoot = cache.node;
+                        this.scrollOffset = 0;
+                        this.needsRecalculation = true;
+
                         return true;
                     }
                     sY += 42;
