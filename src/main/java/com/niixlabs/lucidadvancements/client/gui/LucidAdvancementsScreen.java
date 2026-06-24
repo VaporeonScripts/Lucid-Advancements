@@ -33,6 +33,7 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
     private double maxScroll = 0;
     private double sidebarScroll = 0;
     private double maxSidebarScroll = 0;
+    private double dragClickOffset = 0;
 
     private int totalAdvancements = 0;
     private int completedAdvancements = 0;
@@ -407,9 +408,15 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
                 int viewportHeight = this.height - viewportY - 18;
                 int scrollbarX = this.width - 12;
 
-                if (mouseX >= scrollbarX - 2 && mouseX <= scrollbarX + 5 && mouseY >= viewportY && mouseY <= viewportY + viewportHeight) {
-                    this.draggingMainScrollbar = true;
-                    return true;
+                if (mouseX >= scrollbarX - 2 && mouseX <= scrollbarX + 5) {
+                    int thumbHeight = Math.max(24, (int) ((viewportHeight / (float) (viewportHeight + this.maxScroll)) * viewportHeight));
+                    int thumbY = viewportY + (int) ((this.scrollOffset / this.maxScroll) * (viewportHeight - thumbHeight));
+
+                    if (mouseY >= thumbY && mouseY <= thumbY + thumbHeight) {
+                        this.draggingMainScrollbar = true;
+                        this.dragClickOffset = mouseY - thumbY;
+                        return true;
+                    }
                 }
             }
         }
@@ -428,7 +435,9 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
             int trackHeight = viewportHeight - thumbHeight;
 
             if (trackHeight > 0) {
-                double scrollPercentage = (mouseY - viewportY - (thumbHeight / 2.0)) / trackHeight;
+                double targetThumbY = mouseY - this.dragClickOffset;
+
+                double scrollPercentage = (targetThumbY - viewportY) / trackHeight;
                 scrollPercentage = Mth.clamp(scrollPercentage, 0.0, 1.0);
                 this.scrollOffset = scrollPercentage * this.maxScroll;
             }
