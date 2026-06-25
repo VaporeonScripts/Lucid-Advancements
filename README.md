@@ -13,6 +13,7 @@ Instead of navigating a massive, chaotic advancement tree, your progress is disp
 
 * **Clean & Modern UI:** Fully replaces the vanilla window with a gorgeous full-screen blurred interface.
 * **Category Sidebar:** Quickly jump between different advancement tabs.
+* **Advancement Tracker:** Displays selected advancements on-screen for quick progress tracking.
 * **Card-Based List:** Easily read advancement requirements and rewards.
 * **Global Progress Bar:** Visual feedback on your completion percentage.
 * **Powerful Search:** 
