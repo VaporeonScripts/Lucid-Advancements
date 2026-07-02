@@ -48,11 +48,11 @@ Finding a specific milestone among thousands is instant with powerful top-bar to
 
 * **Global Search:** Query advancements by Title, Description, or internal Category.
 * **Mod-Specific Isolation:** Use the `@` prefix followed by the mod ID to filter advancements from a specific mod (e.g., `@minecraft`, `@farmersdelight`, `@ad_astra`).
-* **Smart Sorting:** A built-in dropdown allows filtering between *All*, *Completed*, *Uncompleted*, and *Challenges*.
+* **Smart Sorting:** A built-in buton allows filtering between *All*, *Completed*, *Uncompleted*, and *Challenges*.
 
 ### Quality of Life & Customization
 * **Dynamic GUI Scale:** A dedicated button allows you to adjust the interface scale on the fly (`Auto`, `1` through `4`) to perfectly fit your monitor resolution.
-* **Global Progress Bar:** Track your overall completion rate for the selected category with a visual metric at the bottom of the sidebar.
+* **Global Progress Bar:** Track your overall completion rate with a visual metric at the bottom of the sidebar.
 * **Intuitive Tooltips:** Hover over any advancement icon to view standard Minecraft item tooltips.
 
 <br>
