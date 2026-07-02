@@ -259,8 +259,20 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
         if (this.font == null) return;
         int maxTextWidth = (int) ((100 - 32) / 0.85f);
 
-        this.cachedSidebarNodes.add(new SidebarNodeCache(null, this.font, maxTextWidth));
 
+        this.rootNodes.sort((a, b) -> {
+            String nsA = a.holder().id().getNamespace();
+            String nsB = b.holder().id().getNamespace();
+
+            if (nsA.equals("minecraft") && !nsB.equals("minecraft")) return -1;
+            if (!nsA.equals("minecraft") && nsB.equals("minecraft")) return 1;
+
+            String titleA = a.holder().value().display().map(d -> d.getTitle().getString()).orElse("");
+            String titleB = b.holder().value().display().map(d -> d.getTitle().getString()).orElse("");
+            return titleA.compareToIgnoreCase(titleB);
+        });
+
+        this.cachedSidebarNodes.add(new SidebarNodeCache(null, this.font, maxTextWidth));
         for (AdvancementNode root : this.rootNodes) {
             this.cachedSidebarNodes.add(new SidebarNodeCache(root, this.font, maxTextWidth));
         }
