@@ -1,6 +1,8 @@
 package com.niixlabs.lucidadvancements.client.gui;
 
-import com.niixlabs.lucidadvancements.client.LucidConfig;
+import com.niixlabs.lucidadvancements.Constants;
+import com.niixlabs.lucidadvancements.utils.LucidConfig;
+import com.niixlabs.lucidadvancements.utils.TranslationExporter;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
@@ -119,7 +121,7 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
 
         int searchWidth = 120;
         currentX -= searchWidth;
-        this.searchBox = new EditBox(this.font, currentX, 16, searchWidth, 16, Component.literal("Search..."));
+        this.searchBox = new EditBox(this.font, currentX, 16, searchWidth, 16, Component.translatable(Constants.MOD_ID + ".gui.search.placeholder"));
         this.searchBox.setResponder(text -> {
             this.scrollOffset = 0;
             this.needsRecalculation = true;
@@ -128,9 +130,9 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
 
         int sortWidth = 110;
         currentX -= (sortWidth + 6);
-        this.sortButton = new LucidButton(currentX, 16, sortWidth, 16, Component.literal("Filter: " + this.currentSort.getDisplayName()), btn -> {
+        this.sortButton = new LucidButton(currentX, 16, sortWidth, 16, Component.translatable(Constants.MOD_ID + ".gui.sort.label", this.currentSort.getDisplayName()), btn -> {
             this.currentSort = this.currentSort.next();
-            btn.setMessage(Component.literal("Filter: " + this.currentSort.getDisplayName()));
+            btn.setMessage(Component.translatable(Constants.MOD_ID + ".gui.sort.label", this.currentSort.getDisplayName()));
             this.scrollOffset = 0;
             this.needsRecalculation = true;
         });
@@ -138,7 +140,7 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
 
         int clearWidth = 95;
         currentX -= (clearWidth + 6);
-        LucidButton clearTrackedButton = new LucidButton(currentX, 16, clearWidth, 16, Component.literal("Clear Tracked"), btn -> {
+        LucidButton clearTrackedButton = new LucidButton(currentX, 16, clearWidth, 16, Component.translatable(Constants.MOD_ID + ".gui.clear_tracked.label"), btn -> {
             TRACKED_ADVANCEMENTS.clear();
             this.needsRecalculation = true;
         });
@@ -146,11 +148,15 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
 
         int scaleWidth = 70;
         currentX -= (scaleWidth + 6);
-        LucidButton scaleButton = new LucidButton(currentX, 16, scaleWidth, 16, Component.literal("Scale: " + (LucidConfig.customGuiScale == 0 ? "Auto" : LucidConfig.customGuiScale)), btn -> {
+        LucidButton scaleButton = new LucidButton(currentX, 16, scaleWidth, 16, Component.translatable(Constants.MOD_ID + ".gui.scale.label", LucidConfig.customGuiScale == 0 ? Component.translatable(Constants.MOD_ID + ".gui.scale.mode.vanilla").getString() : Component.translatable(Constants.MOD_ID + ".gui.scale.mode.custom", LucidConfig.customGuiScale).getString()), btn -> {
             int nextScale = LucidConfig.customGuiScale >= 4 ? 0 : LucidConfig.customGuiScale + 1;
+            
+            //TranslationExporter.exportCurrentAdvancements(this.progressMap);
 
             LucidConfig.updateAndSave("customGuiScale", nextScale);
-            btn.setMessage(Component.literal("Scale: " + (LucidConfig.customGuiScale == 0 ? "Auto" : LucidConfig.customGuiScale)));
+            String guiScaleText = LucidConfig.customGuiScale == 0 ? Component.translatable(Constants.MOD_ID + ".gui.scale.mode.vanilla").getString() : Component.translatable(Constants.MOD_ID + ".gui.scale.mode.custom", nextScale).getString();
+
+            btn.setMessage(Component.translatable(Constants.MOD_ID + ".gui.scale.label", guiScaleText));
 
             if (this.minecraft != null) {
                 this.init(this.minecraft, this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight());
@@ -482,7 +488,7 @@ public class LucidAdvancementsScreen extends Screen implements ClientAdvancement
             guiGraphics.fill(barX, barY, barX + barWidth, barY + 6, 0xAA1A1A1A);
             guiGraphics.fillGradient(barX, barY, barX + (int) (barWidth * pct), barY + 6, 0xAA00FFAA, 0xAA00CC88);
 
-            String progressText = this.completedAdvancements + " / " + this.totalAdvancements;
+            String progressText = Component.translatable(Constants.MOD_ID + ".gui.progress_text", this.completedAdvancements, this.totalAdvancements).getString();
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(sidebarWidth / 2f, barY - 11, 0);
             guiGraphics.pose().scale(0.82f, 0.82f, 1.0f);

@@ -1,47 +1,82 @@
-# Lucid Advancements
+<div align="center">
 
-![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21%2B-blue)
-![Side](https://img.shields.io/badge/Side-Client-green)
+![Lucid Advancements](https://cdn.modrinth.com/data/cached_images/240930d0420c6d769f1d90835582819310b4d6bb.png)
 
-**Lucid Advancements** replaces Minecraft's default Advancements screen with a clean, modern, and easier-to-use interface. 
+![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21%2B-blue?style=for-the-badge)
+![Side](https://img.shields.io/badge/Side-Client-green?style=for-the-badge)
 
-Instead of navigating a massive, chaotic advancement tree, your progress is displayed as organized cards with improved readability, visual feedback, and a sleek semi-transparent blurred background that covers the whole screen.
+**Browse, track, and complete your goals without the visual chaos.**
 
----
-
-## ✨ Features
-
-* **Clean & Modern UI:** Fully replaces the vanilla window with a gorgeous full-screen blurred interface.
-* **Category Sidebar:** Quickly jump between different advancement tabs.
-* **Advancement Tracker:** Displays selected advancements on-screen for quick progress tracking.
-* **Card-Based List:** Easily read advancement requirements and rewards.
-* **Global Progress Bar:** Visual feedback on your completion percentage.
-* **Powerful Search:** 
-  * Search by **Title**, **Description**, or **Category**.
-  * Filter by specific mods using `@modid` (e.g., `@farmersdelight`, `@create`).
-* **Smart Sorting:** Completed advancements shift to the top, challenge advancements are highlighted, and hidden ones stay hidden until unlocked.
-* **Performance Optimized:** Built to handle heavy modpacks with thousands of advancements smoothly without lag.
+</div>
 
 ---
 
-## 🔍 Search Examples
+## Overview
 
-Type these directly into the in-game search bar:
-* `diamond` or `exploration` (Standard search)
-* `@minecraft` (Vanilla advancements only)
-* `@ad_astra` (Specific mod advancements)
+**Lucid Advancements** is a complete, client-side overhaul of Minecraft's default Advancements screen. Designed specifically to handle the sheer volume of large modpacks, it replaces the traditional, cluttered advancement tree with a clean, modern, and highly responsive list-based interface.
 
 ---
 
-## 🧩 Compatibility
+## Key Features
 
-* **Client-side only:** You do not need to install this on the server.
-* **Modpack Ready:** Works seamlessly with vanilla and heavy modded advancement trees.
-* Fully compatible with existing advancement data without altering core game mechanics.
+### Visual Overhaul & Organization
+The vanilla advancement tree scales poorly when playing with multiple mods. Lucid Advancements introduces a standardized layout:
+
+* **Categorical Sidebar:** Quickly navigate between different advancement tabs using a sleek, scalable left-hand sidebar.
+* **Card-Based Layout:** Advancements are displayed as uniform cards, massively improving readability for long descriptions.
+* **Expandable Requirements:** Clicking on an advancement card expands it to reveal a detailed, checked list of specific requirements. No more guessing what you are missing.
+
+<br>
+<div align="center">
+  <img src="https://cdn.modrinth.com/data/cached_images/934b83ce11c53cee25542c6ccc6d6aed020b6f5d.png" alt="Expandable Requirements"/>
+</div>
+<br>
+
+### On-Screen Tracking
+Keep your current goals in sight at all times without breaking your gameplay loop:
+
+* **HUD Integration:** Pin tracked advancements to monitor your progress in real-time directly from your screen. Eliminates the need to constantly reopen the menu.
+
+<br>
+<div align="center">
+  <img src="https://cdn.modrinth.com/data/cached_images/f5d4915d3e47b6f9b7032437ce26780dbd777a64.png" alt="HUD Tracking"/>
+</div>
+<br>
+
+### Advanced Search & Filtering
+Finding a specific milestone among thousands is instant with powerful top-bar tools:
+
+* **Global Search:** Query advancements by Title, Description, or internal Category.
+* **Mod-Specific Isolation:** Use the `@` prefix followed by the mod ID to filter advancements from a specific mod (e.g., `@minecraft`, `@farmersdelight`, `@ad_astra`).
+* **Smart Sorting:** A built-in dropdown allows filtering between *All*, *Completed*, *Uncompleted*, and *Challenges*.
+
+### Quality of Life & Customization
+* **Dynamic GUI Scale:** A dedicated button allows you to adjust the interface scale on the fly (`Auto`, `1` through `4`) to perfectly fit your monitor resolution.
+* **Global Progress Bar:** Track your overall completion rate for the selected category with a visual metric at the bottom of the sidebar.
+* **Intuitive Tooltips:** Hover over any advancement icon to view standard Minecraft item tooltips.
+
+<br>
+<div align="center">
+  <img src="https://cdn.modrinth.com/data/cached_images/863752223aa5c85d005c605a76f75d77bcc33ca6.png" alt="Global Progress Bar"/>
+</div>
+<br>
 
 ---
 
-## 🛠️ Bug Reports & Feedback
+## Compatibility
 
-Found a bug? Or have a cool feature idea? 
-Please open an issue in our [Issue Tracker](https://github.com/niix-dan/lucid-advancements/issues) using the provided templates.
+* **Client-Side Architecture:** Lucid Advancements modifies only the graphical interface and tracking mechanics. You do not need to install this on the server.
+* **Data Preservation:** Reads standard vanilla and modded advancement data seamlessly without altering core game mechanics or progression logic. It is perfectly safe to drop into any existing modpack.
+
+---
+
+## Bug Reports & Feedback
+
+If you encounter a bug, have a feature request, or want to contribute to the upcoming cross-mod translation system, please open an issue in our **[Issue Tracker](https://github.com/Niix-Dan/Lucid-Advancements/issues)** using the provided templates.
+
+<br>
+<div align="center">
+
+[![Discord Community](https://discordapp.com/api/guilds/1519007858778177749/widget.png?style=banner2)](https://discord.gg/vChttNgJ4v)
+
+</div>

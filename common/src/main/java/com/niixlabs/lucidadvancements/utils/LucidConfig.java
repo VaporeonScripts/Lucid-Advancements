@@ -1,4 +1,4 @@
-package com.niixlabs.lucidadvancements.client;
+package com.niixlabs.lucidadvancements.utils;
 
 import net.minecraft.client.Minecraft;
 import java.io.BufferedReader;

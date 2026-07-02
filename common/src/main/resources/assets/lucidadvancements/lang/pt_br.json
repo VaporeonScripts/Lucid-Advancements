@@ -1,0 +1,24 @@
+{
+  "lucidadvancements.gui.title": "Conquistas",
+
+  "lucidadvancements.gui.search.placeholder": "Buscar...",
+
+  "lucidadvancements.gui.clear_tracked.label": "Desmarcar",
+
+  "lucidadvancements.gui.sort.label": "Ordem: %s",
+  "lucidadvancements.gui.sort.mode.all": "Todos",
+  "lucidadvancements.gui.sort.mode.completed": "Concluídos",
+  "lucidadvancements.gui.sort.mode.incomplete": "Incompletos",
+  "lucidadvancements.gui.sort.mode.challenges": "Desafios",
+
+  "lucidadvancements.gui.scale.label": "Escala: %s",
+  "lucidadvancements.gui.scale.mode.vanilla": "Auto",
+  "lucidadvancements.gui.scale.mode.custom": "%s",
+
+  "lucidadvancements.gui.progress_text": "%s / %s",
+
+  "lucidadvancements.gui.card.requirements": "Requisitos:",
+  "lucidadvancements.gui.card.no_requirements": "• Nenhum requisito visível...",
+
+  "lucidadvancements.overlay.hidden_count": "  + %s outros..."
+}

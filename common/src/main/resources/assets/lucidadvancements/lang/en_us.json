@@ -1,0 +1,24 @@
+{
+  "lucidadvancements.gui.title": "Advancements",
+
+  "lucidadvancements.gui.search.placeholder": "Search...",
+
+  "lucidadvancements.gui.clear_tracked.label": "Clear Tracked",
+
+  "lucidadvancements.gui.sort.label": "Sort: %s",
+  "lucidadvancements.gui.sort.mode.all": "All",
+  "lucidadvancements.gui.sort.mode.completed": "Completed",
+  "lucidadvancements.gui.sort.mode.incomplete": "Incomplete",
+  "lucidadvancements.gui.sort.mode.challenges": "Challenges",
+
+  "lucidadvancements.gui.scale.label": "Scale: %s",
+  "lucidadvancements.gui.scale.mode.vanilla": "Auto",
+  "lucidadvancements.gui.scale.mode.custom": "%s",
+
+  "lucidadvancements.gui.progress_text": "%s / %s",
+
+  "lucidadvancements.gui.card.requirements": "Requirements:",
+  "lucidadvancements.gui.card.no_requirements": "• No visible requirements...",
+
+  "lucidadvancements.overlay.hidden_count": "  + %s more..."
+}

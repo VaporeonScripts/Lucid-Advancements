@@ -1,6 +1,8 @@
 package com.niixlabs.lucidadvancements.client.gui;
 
-import com.niixlabs.lucidadvancements.client.LucidConfig;
+import com.niixlabs.lucidadvancements.Constants;
+import com.niixlabs.lucidadvancements.utils.LucidConfig;
+import com.niixlabs.lucidadvancements.utils.TranslationUtils;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementType;
@@ -8,6 +10,7 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -57,13 +60,16 @@ public class AdvancementCard implements Comparable<AdvancementCard> {
         this.baseHeight = Math.max(46, 28 + (this.wrappedDesc.size() * 10));
 
         if (isExpanded && progress != null && !this.hidden) {
+            ResourceLocation advId = node.holder().id();
+
             for (String c : progress.getCompletedCriteria()) {
-                String clean = formatCaps(cleanCriteriaName(c));
-                criteriaList.add(new CriteriaEntry(c, "✔ " + clean, true));
+                String displayName = TranslationUtils.resolveDisplayCriterion(advId, c);
+                criteriaList.add(new CriteriaEntry(c, "✔ " + displayName, true));
             }
+
             for (String c : progress.getRemainingCriteria()) {
-                String clean = formatCaps(cleanCriteriaName(c));
-                criteriaList.add(new CriteriaEntry(c, "🔒 " + clean, false));
+                String displayName = TranslationUtils.resolveDisplayCriterion(advId, c);
+                criteriaList.add(new CriteriaEntry(c, "🔒 " + displayName, false));
             }
         }
 
@@ -73,13 +79,6 @@ public class AdvancementCard implements Comparable<AdvancementCard> {
         } else {
             this.totalHeight = this.baseHeight;
         }
-    }
-
-    private String cleanCriteriaName(String raw) {
-        if (raw.contains(":")) {
-            raw = raw.substring(raw.indexOf(":") + 1);
-        }
-        return raw.replace("_", " ").toLowerCase();
     }
 
     public int getHeight() {
@@ -162,11 +161,11 @@ public class AdvancementCard implements Comparable<AdvancementCard> {
             guiGraphics.fill(x + 12, y + this.baseHeight - 5, x + width - 12, y + this.baseHeight - 4, 0x44FFFFFF);
 
             int triggerY = y + this.baseHeight + 3;
-            guiGraphics.drawString(font, "Requirements:", x + 40, triggerY, 0xFF888888, true);
+            guiGraphics.drawString(font, Component.translatable(Constants.MOD_ID + ".gui.card.requirements"), x + 40, triggerY, 0xFF888888, true);
             triggerY += 11;
 
             if (criteriaList.isEmpty()) {
-                guiGraphics.drawString(font, "• No visible requirements...", x + 48, triggerY, 0xFF555555, true);
+                guiGraphics.drawString(font, Component.translatable(Constants.MOD_ID + ".gui.card.no_requirements"), x + 48, triggerY, 0xFF555555, true);
             } else {
                 for (CriteriaEntry entry : criteriaList) {
                     int color = entry.done ? 0xFF00CC88 : 0xFF777777;
@@ -198,18 +197,6 @@ public class AdvancementCard implements Comparable<AdvancementCard> {
             triggerY += 10;
         }
         return null;
-    }
-
-    public String formatCaps(String c) {
-        if (c == null || c.isEmpty()) return "";
-        String[] words = c.split(" ");
-        StringBuilder sb = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1)).append(" ");
-            }
-        }
-        return sb.toString().trim();
     }
 
     public void renderIcon(GuiGraphics guiGraphics, int x, int y) {
