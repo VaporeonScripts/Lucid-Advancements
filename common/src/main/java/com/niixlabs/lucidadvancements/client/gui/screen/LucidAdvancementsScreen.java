@@ -49,6 +49,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     private static final int HEADER_TITLE_COLOR = 0xFFFFFFFF;
     private static final int HEADER_DESCRIPTION_COLOR = 0xFFAAAAAA;
     private static final int HEADER_DIVIDER_COLOR = 0x88303030;
+    private static final int HEADER_PERCENTAGE_COLOR = 0xFF00FFAA;
     private static final int SCROLLBAR_TRACK_COLOR = 0xAA1A1A1A;
     private static final int SCROLLBAR_THUMB_ACTIVE = 0xFF00FFAA;
     private static final int SCROLLBAR_THUMB_IDLE = 0xAA00FFAA;
@@ -338,8 +339,8 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     public void onAddAdvancementRoot(AdvancementNode node) {
         if (node.root() == node && node.holder().value().display().isPresent() && !rootNodes.contains(node)) {
             rootNodes.add(node);
-            recalculateGlobalStats();
             rebuildSidebarCache();
+            recalculateGlobalStats();
         }
     }
 
@@ -349,8 +350,8 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         if (selectedRoot == node) {
             selectedRoot = null;
         }
-        recalculateGlobalStats();
         rebuildSidebarCache();
+        recalculateGlobalStats();
     }
 
     @Override
@@ -630,6 +631,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         guiGraphics.pose().popPose();
     }
 
+
     private void renderProgressBar(GuiGraphics guiGraphics) {
         int sidebarWidth = ScreenMetrics.SIDEBAR_WIDTH;
         int progressAreaY = height - ScreenMetrics.SIDEBAR_PROGRESS_HEIGHT;
@@ -658,6 +660,11 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         guiGraphics.pose().popPose();
     }
 
+    private String formatProgress(int completed, int total) {
+        int percentage = total > 0 ? Math.round((completed * 100f) / total) : 0;
+        return completed + "/" + total + " (" + percentage + "%)";
+    }
+
     private void renderContentHeader(GuiGraphics guiGraphics, int contentX, boolean searching) {
         if (searching) {
             return;
@@ -665,14 +672,30 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
 
         Component headerTitle;
         Component headerDescription;
+        int completed;
+        int total;
 
         if (selectedRoot != null && selectedRoot.holder().value().display().isPresent()) {
             DisplayInfo rootDisplay = selectedRoot.holder().value().display().get();
             headerTitle = rootDisplay.getTitle();
             headerDescription = rootDisplay.getDescription();
+
+            total = 0;
+            completed = 0;
+            for (AdvancementNode node : collectTasks(selectedRoot)) {
+                if (node.holder().value().display().isPresent()) {
+                    total++;
+                    AdvancementProgress progress = progressMap.get(node);
+                    if (progress != null && progress.isDone()) {
+                        completed++;
+                    }
+                }
+            }
         } else if (selectedRoot == null) {
             headerTitle = Component.translatable(Constants.MOD_ID + ".gui.global_category.title");
             headerDescription = Component.translatable(Constants.MOD_ID + ".gui.global_category.desc");
+            total = totalAdvancements;
+            completed = completedAdvancements;
         } else {
             return;
         }
@@ -682,8 +705,36 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         guiGraphics.drawString(font, headerTitle, (int) (contentX / 1.2f), (int) ((ScreenMetrics.TOP_BAR_HEIGHT + 10) / 1.2f), HEADER_TITLE_COLOR, true);
         guiGraphics.pose().popPose();
 
+        if (total > 0) {
+            renderHeaderProgressBar(guiGraphics, completed, total);
+        }
+
         guiGraphics.drawString(font, headerDescription, contentX, ScreenMetrics.TOP_BAR_HEIGHT + 28, HEADER_DESCRIPTION_COLOR, true);
         guiGraphics.fill(contentX, ScreenMetrics.TOP_BAR_HEIGHT + 44, width - ScreenMetrics.CONTENT_MARGIN, ScreenMetrics.TOP_BAR_HEIGHT + 45, HEADER_DIVIDER_COLOR);
+    }
+
+    private void renderHeaderProgressBar(GuiGraphics guiGraphics, int completed, int total) {
+        float percentage = total > 0 ? (float) completed / total : 0f;
+
+        int barWidth = 80;
+        int barHeight = 7;
+        int barX = width - ScreenMetrics.CONTENT_MARGIN - barWidth;
+        int barY = ScreenMetrics.TOP_BAR_HEIGHT + 18;
+
+        String progressText = formatProgress(completed, total);
+        int textWidth = font.width(progressText);
+
+        int textX = barX + barWidth - textWidth;
+        int textY = barY - 2 - barHeight;
+
+        guiGraphics.drawString(font, progressText, textX, textY, HEADER_PERCENTAGE_COLOR, true);
+        guiGraphics.fill(barX - 1, barY - 1, barX + barWidth + 1, barY + barHeight + 1, PROGRESS_TRACK_BORDER);
+        guiGraphics.fill(barX, barY, barX + barWidth, barY + barHeight, PROGRESS_TRACK_FILL);
+
+        if (completed > 0) {
+            int fillWidth = (int) (barWidth * percentage);
+            guiGraphics.fillGradient(barX, barY, barX + fillWidth, barY + barHeight, PROGRESS_FILL_START, PROGRESS_FILL_END);
+        }
     }
 
     private HoverResult renderCardList(GuiGraphics guiGraphics, double scaleFactor, int contentX, int contentWidth,
