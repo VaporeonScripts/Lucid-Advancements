@@ -441,10 +441,19 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         }
 
         int contentWidth = ScreenMetrics.contentWidth(width);
+
         String query = searchBox.getValue().toLowerCase();
         boolean searching = !query.isEmpty();
-        boolean modIdSearch = query.startsWith("@");
-        String searchTarget = modIdSearch ? query.substring(1) : query;
+
+        String modIdFilter = null;
+        String textFilter = query;
+
+        if (query.startsWith("@")) {
+            String rest = query.substring(1);
+            int spaceIndex = rest.indexOf(' ');
+            modIdFilter = spaceIndex == -1 ? rest : rest.substring(0, spaceIndex);
+            textFilter = spaceIndex == -1 ? "" : rest.substring(spaceIndex + 1).trim();
+        }
 
         List<AdvancementNode> nodesToDisplay = collectNodesToDisplay(searching);
 
@@ -460,7 +469,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
                 continue;
             }
 
-            if (searching && !matchesSearch(child, display, modIdSearch, searchTarget)) {
+            if (searching && !matchesSearch(child, display, modIdFilter, textFilter)) {
                 continue;
             }
 
@@ -508,9 +517,12 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         };
     }
 
-    private boolean matchesSearch(AdvancementNode child, DisplayInfo display, boolean modIdSearch, String searchTarget) {
-        if (modIdSearch) {
-            return child.holder().id().getNamespace().toLowerCase().contains(searchTarget);
+    private boolean matchesSearch(AdvancementNode child, DisplayInfo display, @Nullable String modIdFilter, String textFilter) {
+        if (modIdFilter != null && !child.holder().id().getNamespace().toLowerCase().contains(modIdFilter)) {
+            return false;
+        }
+        if (textFilter.isEmpty()) {
+            return true;
         }
 
         String title = display.getTitle().getString().toLowerCase();
@@ -519,7 +531,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
                 ? child.root().holder().value().display().get().getTitle().getString().toLowerCase()
                 : "";
 
-        return title.contains(searchTarget) || description.contains(searchTarget) || category.contains(searchTarget);
+        return title.contains(textFilter) || description.contains(textFilter) || category.contains(textFilter);
     }
 
     @Override
