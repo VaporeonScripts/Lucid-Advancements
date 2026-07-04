@@ -2,7 +2,7 @@ package com.niixlabs.lucidadvancements.client.gui.screen;
 
 import com.niixlabs.lucidadvancements.Constants;
 import com.niixlabs.lucidadvancements.client.gui.card.AdvancementCard;
-import com.niixlabs.lucidadvancements.client.gui.card.SortMode;
+import com.niixlabs.lucidadvancements.client.gui.card.FilterMode;
 import com.niixlabs.lucidadvancements.client.gui.sidebar.SidebarNodeCache;
 import com.niixlabs.lucidadvancements.config.LucidConfig;
 import net.minecraft.advancements.AdvancementHolder;
@@ -11,7 +11,6 @@ import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -24,13 +23,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public final class LucidAdvancementsScreen extends Screen implements ClientAdvancements.Listener {
     private static final int BACKDROP_COLOR = 0xD0101010;
@@ -73,7 +66,9 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     private static boolean configLoaded = false;
 
     private EditBox searchBox;
-    private SortMode currentSort = SortMode.ALL;
+    private FilterMode currentFilter = FilterMode.ALL;
+    private LucidDropdown<FilterMode> filterDropdown;
+
     private AdvancementNode expandedNode = null;
     private AdvancementNode selectedRoot = null;
 
@@ -165,16 +160,15 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         });
         addRenderableWidget(searchBox);
 
-        int sortWidth = 110;
-        currentX -= (sortWidth + 6);
-        Button sortButton = new LucidButton(currentX, 16, sortWidth, 16,
-                Component.translatable(Constants.MOD_ID + ".gui.sort.label", currentSort.getDisplayName()), btn -> {
-            currentSort = currentSort.next();
-            btn.setMessage(Component.translatable(Constants.MOD_ID + ".gui.sort.label", currentSort.getDisplayName()));
+        int filterWidth = 110;
+        currentX -= (filterWidth + 6);
+        filterDropdown = new LucidDropdown<>(currentX, 16, filterWidth, 16, currentFilter,
+                List.of(FilterMode.values()), FilterMode::getDisplayName, mode -> {
+            currentFilter = mode;
             scrollOffset = 0;
             needsRecalculation = true;
         });
-        addRenderableWidget(sortButton);
+        addRenderableWidget(filterDropdown);
 
         int clearWidth = 95;
         currentX -= (clearWidth + 6);
@@ -225,7 +219,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
                 : findNode(targetRoot, targetId);
 
         searchBox.setValue("");
-        currentSort = SortMode.ALL;
+        currentFilter = FilterMode.ALL;
         clientAdvancements.setSelectedTab(targetRoot.holder(), true);
         selectedRoot = targetRoot;
         expandedNode = targetNode;
@@ -462,9 +456,10 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
             AdvancementProgress progress = progressMap.get(child);
             boolean done = progress != null && progress.isDone();
 
-            if (!matchesSortMode(done, display)) {
+            if (!matchesFilterMode(done, display, progress)) {
                 continue;
             }
+
             if (searching && !matchesSearch(child, display, modIdSearch, searchTarget)) {
                 continue;
             }
@@ -474,7 +469,9 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
             cachedCards.add(new AdvancementCard(child, display, progress, expanded, tracked, font, contentWidth));
         }
 
-        if (currentSort == SortMode.ALL) {
+        if (currentFilter == FilterMode.PARTIAL) {
+            cachedCards.sort(Comparator.comparingDouble(AdvancementCard::getProgressRatio).reversed());
+        } else if (currentFilter == FilterMode.ALL) {
             Collections.sort(cachedCards);
         }
 
@@ -501,11 +498,12 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         return nodes;
     }
 
-    private boolean matchesSortMode(boolean done, DisplayInfo display) {
-        return switch (currentSort) {
+    private boolean matchesFilterMode(boolean done, DisplayInfo display, @Nullable AdvancementProgress progress) {
+        return switch (currentFilter) {
             case COMPLETED -> done;
             case INCOMPLETE -> !done;
             case CHALLENGES -> display.getType() == AdvancementType.CHALLENGE;
+            case PARTIAL -> !done && progress != null && progress.getPercent() > 0f;
             case ALL -> true;
         };
     }
@@ -561,6 +559,8 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         HoverResult hover = renderCardList(guiGraphics, scaleFactor, contentX, contentWidth, viewportY, viewportHeight, scaledMouseX, scaledMouseY);
         renderMainScrollbar(guiGraphics, viewportY, viewportHeight);
         renderHoverTooltip(guiGraphics, hover, scaledMouseX, scaledMouseY);
+
+        filterDropdown.renderOptions(guiGraphics, scaledMouseX, scaledMouseY);
 
         guiGraphics.pose().popPose();
     }
@@ -685,7 +685,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         int cardY = viewportY - (int) scrollOffset;
         for (AdvancementCard card : cachedCards) {
             if (isCardVisible(cardY, card, viewportY, viewportHeight)) {
-                card.renderBackgroundAndText(guiGraphics, font, contentX, cardY, contentWidth, scaledMouseX, scaledMouseY, viewportY, viewportHeight);
+                card.renderBackgroundAndText(guiGraphics, font, contentX, cardY, contentWidth, scaledMouseX, scaledMouseY, viewportY, viewportHeight, filterDropdown.isOpen());
             }
             cardY += card.getHeight() + ScreenMetrics.CARD_SPACING;
         }
@@ -698,12 +698,12 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
             if (isCardVisible(cardY, card, viewportY, viewportHeight)) {
                 card.renderIcon(guiGraphics, contentX, cardY);
 
-                ItemStack possibleHover = card.getHoveredIcon(scaledMouseX, scaledMouseY, contentX, cardY, viewportY, viewportHeight);
+                ItemStack possibleHover = card.getHoveredIcon(scaledMouseX, scaledMouseY, contentX, cardY, viewportY, viewportHeight, filterDropdown.isOpen());
                 if (possibleHover != null) {
                     hoveredIcon = possibleHover;
                 }
 
-                String possibleTag = card.getHoveredCriterionTag(font, scaledMouseX, scaledMouseY, contentX, cardY, viewportY, viewportHeight);
+                String possibleTag = card.getHoveredCriterionTag(font, scaledMouseX, scaledMouseY, contentX, cardY, viewportY, viewportHeight, filterDropdown.isOpen());
                 if (possibleTag != null) {
                     hoveredCriterionTag = possibleTag;
                 }
@@ -749,6 +749,11 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
 
         if (button != 0) {
             return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        if (filterDropdown.isOpen()) {
+            filterDropdown.mouseClickedOptions(mouseX, mouseY);
+            return true;
         }
 
         if (mouseX <= ScreenMetrics.SIDEBAR_WIDTH) {
@@ -817,7 +822,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
 
     private boolean handleCardInteraction(AdvancementCard card, double mouseX, double mouseY, int contentX, int contentWidth,
                                           int cardY, int viewportY, int viewportHeight) {
-        if (card.isTrackIconHovered(mouseX, mouseY, contentX, cardY, contentWidth, viewportY, viewportHeight)) {
+        if (card.isTrackIconHovered(mouseX, mouseY, contentX, cardY, contentWidth, viewportY, viewportHeight, filterDropdown.isOpen())) {
             toggleTracked(card);
             return true;
         }
@@ -900,6 +905,11 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         double scaleFactor = getScaleFactor();
         mouseX *= scaleFactor;
+
+        if (filterDropdown.isOpen()) {
+            filterDropdown.close();
+            return true;
+        }
 
         if (mouseX <= ScreenMetrics.SIDEBAR_WIDTH) {
             sidebarScroll = Mth.clamp(sidebarScroll - (scrollY * 20), 0.0, maxSidebarScroll);

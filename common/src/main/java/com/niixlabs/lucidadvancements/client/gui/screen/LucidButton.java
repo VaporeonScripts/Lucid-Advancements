@@ -24,7 +24,7 @@ final class LucidButton extends Button {
             return;
         }
 
-        boolean hovered = isHoveredOrFocused();
+        boolean hovered = isHovered();
         int backgroundColor = hovered ? COLOR_BACKGROUND_HOVERED : COLOR_BACKGROUND_IDLE;
         int borderColor = hovered ? COLOR_BORDER_HOVERED : COLOR_BORDER_IDLE;
         int textColor = hovered ? COLOR_TEXT_HOVERED : COLOR_TEXT_IDLE;

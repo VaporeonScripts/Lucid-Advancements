@@ -50,6 +50,7 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
     private final boolean hidden;
     private final boolean rare;
     private final AdvancementState state;
+    private final float progressRatio;
     private final List<FormattedCharSequence> wrappedDescription;
     private final List<CriterionEntry> criteria = new ArrayList<>();
 
@@ -69,6 +70,7 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
         this.hidden = display.isHidden() && !this.done;
         this.rare = display.getType() == AdvancementType.CHALLENGE;
         this.state = resolveState(this.done, this.rare);
+        this.progressRatio = progress != null ? progress.getPercent() : 0f;
 
         this.title = this.hidden ? Component.literal(HIDDEN_LABEL) : display.getTitle();
         Component description = this.hidden ? Component.literal(HIDDEN_LABEL) : display.getDescription();
@@ -127,7 +129,7 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
     }
 
     public void renderBackgroundAndText(GuiGraphics guiGraphics, Font font, int x, int y, int width, int mouseX, int mouseY,
-                                        int viewportY, int viewportHeight) {
+                                        int viewportY, int viewportHeight, boolean isBlocked) {
         CardPalette palette = resolvePalette();
 
         guiGraphics.fillGradient(x, y, x + width, y + totalHeight, palette.background1(), palette.background2());
@@ -136,7 +138,7 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
         guiGraphics.fill(x, y + totalHeight - 1, x + width, y + totalHeight, palette.border());
         guiGraphics.fill(x + width - 1, y, x + width, y + totalHeight, palette.border());
 
-        if (isHovered(mouseX, mouseY, x, y, width, viewportY, viewportHeight)) {
+        if (!isBlocked && isHovered(mouseX, mouseY, x, y, width, viewportY, viewportHeight)) {
             guiGraphics.fill(x, y, x + width, y + totalHeight, COLOR_HOVER_OVERLAY);
         }
 
@@ -220,8 +222,8 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
     }
 
     @Nullable
-    public String getHoveredCriterionTag(Font font, int mouseX, int mouseY, int x, int y, int viewportY, int viewportHeight) {
-        if (!expanded || hidden || criteria.isEmpty()) {
+    public String getHoveredCriterionTag(Font font, int mouseX, int mouseY, int x, int y, int viewportY, int viewportHeight, boolean isBlocked) {
+        if (isBlocked || !expanded || hidden || criteria.isEmpty()) {
             return null;
         }
         if (mouseY < viewportY || mouseY > viewportY + viewportHeight) {
@@ -239,6 +241,10 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
         return null;
     }
 
+    public float getProgressRatio() {
+        return progressRatio;
+    }
+
     public void renderIcon(GuiGraphics guiGraphics, int x, int y) {
         if (hidden) {
             return;
@@ -250,8 +256,8 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
         guiGraphics.pose().popPose();
     }
 
-    public boolean isTrackIconHovered(double mouseX, double mouseY, int x, int y, int width, int viewportY, int viewportHeight) {
-        if (hidden || done) {
+    public boolean isTrackIconHovered(double mouseX, double mouseY, int x, int y, int width, int viewportY, int viewportHeight, boolean isBlocked) {
+        if (isBlocked || hidden || done) {
             return false;
         }
         if (mouseY < viewportY || mouseY > viewportY + viewportHeight) {
@@ -265,8 +271,8 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
     }
 
     @Nullable
-    public ItemStack getHoveredIcon(int mouseX, int mouseY, int x, int y, int viewportY, int viewportHeight) {
-        if (hidden) {
+    public ItemStack getHoveredIcon(int mouseX, int mouseY, int x, int y, int viewportY, int viewportHeight, boolean isBlocked) {
+        if (isBlocked || hidden) {
             return null;
         }
         int iconY = y + (baseHeight / 2) - 8;
