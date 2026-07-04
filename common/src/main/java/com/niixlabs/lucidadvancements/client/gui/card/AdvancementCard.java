@@ -32,6 +32,7 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
     private static final int COLOR_CRITERION_DONE = 0xFF00CC88;
     private static final int COLOR_CRITERION_PENDING = 0xFF777777;
     private static final int COLOR_DIVIDER = 0x44FFFFFF;
+    private static final int COLOR_HOVER_OVERLAY = 0x20FFFFFF;
 
     private static final int BASE_HEIGHT_MIN = 46;
     private static final int BASE_HEIGHT_PADDING = 28;
@@ -125,7 +126,8 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
         return node;
     }
 
-    public void renderBackgroundAndText(GuiGraphics guiGraphics, Font font, int x, int y, int width, int mouseX, int mouseY) {
+    public void renderBackgroundAndText(GuiGraphics guiGraphics, Font font, int x, int y, int width, int mouseX, int mouseY,
+                                        int viewportY, int viewportHeight) {
         CardPalette palette = resolvePalette();
 
         guiGraphics.fillGradient(x, y, x + width, y + totalHeight, palette.background1(), palette.background2());
@@ -133,6 +135,10 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
         guiGraphics.fill(x, y, x + width, y + 1, palette.border());
         guiGraphics.fill(x, y + totalHeight - 1, x + width, y + totalHeight, palette.border());
         guiGraphics.fill(x + width - 1, y, x + width, y + totalHeight, palette.border());
+
+        if (isHovered(mouseX, mouseY, x, y, width, viewportY, viewportHeight)) {
+            guiGraphics.fill(x, y, x + width, y + totalHeight, COLOR_HOVER_OVERLAY);
+        }
 
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0, 0, 50);
@@ -204,6 +210,13 @@ public final class AdvancementCard implements Comparable<AdvancementCard> {
         return new CardPalette(LucidConfig.cardNormalBg1, LucidConfig.cardNormalBg2,
                 LucidConfig.cardNormalBorder, LucidConfig.cardNormalTitle,
                 COLOR_INACTIVE, tracked ? COLOR_TRACKED_ACTIVE : COLOR_INACTIVE);
+    }
+
+    private boolean isHovered(int mouseX, int mouseY, int x, int y, int width, int viewportY, int viewportHeight) {
+        if (mouseY < viewportY || mouseY > viewportY + viewportHeight) {
+            return false;
+        }
+        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + totalHeight;
     }
 
     @Nullable

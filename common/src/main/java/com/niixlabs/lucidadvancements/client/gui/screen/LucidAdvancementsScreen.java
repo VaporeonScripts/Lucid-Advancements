@@ -685,7 +685,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         int cardY = viewportY - (int) scrollOffset;
         for (AdvancementCard card : cachedCards) {
             if (isCardVisible(cardY, card, viewportY, viewportHeight)) {
-                card.renderBackgroundAndText(guiGraphics, font, contentX, cardY, contentWidth, scaledMouseX, scaledMouseY);
+                card.renderBackgroundAndText(guiGraphics, font, contentX, cardY, contentWidth, scaledMouseX, scaledMouseY, viewportY, viewportHeight);
             }
             cardY += card.getHeight() + ScreenMetrics.CARD_SPACING;
         }
