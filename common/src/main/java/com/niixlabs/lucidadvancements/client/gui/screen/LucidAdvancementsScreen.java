@@ -571,11 +571,12 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
 
         HoverResult hover = renderCardList(guiGraphics, scaleFactor, contentX, contentWidth, viewportY, viewportHeight, scaledMouseX, scaledMouseY);
         renderMainScrollbar(guiGraphics, viewportY, viewportHeight);
-        renderHoverTooltip(guiGraphics, hover, scaledMouseX, scaledMouseY);
 
         filterDropdown.renderOptions(guiGraphics, scaledMouseX, scaledMouseY);
 
         guiGraphics.pose().popPose();
+
+        renderHoverTooltip(guiGraphics, hover, mouseX, mouseY);
     }
 
     private void renderTopBar(GuiGraphics guiGraphics) {
@@ -599,9 +600,10 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         int scissorY2 = (int) Math.round((height - ScreenMetrics.SIDEBAR_PROGRESS_HEIGHT) / scaleFactor);
         guiGraphics.enableScissor(0, 0, scissorX2, scissorY2);
 
+        int sidebarViewportBottom = height - ScreenMetrics.SIDEBAR_PROGRESS_HEIGHT;
         int rowY = ScreenMetrics.SIDEBAR_TOP_PADDING - (int) sidebarScroll;
         for (SidebarNodeCache cache : cachedSidebarNodes) {
-            renderSidebarRow(guiGraphics, cache, rowY, sidebarWidth, scaledMouseX, scaledMouseY);
+            renderSidebarRow(guiGraphics, cache, rowY, sidebarWidth, scaledMouseX, scaledMouseY, sidebarViewportBottom);
             rowY += ScreenMetrics.SIDEBAR_ROW_HEIGHT;
         }
 
@@ -614,13 +616,14 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         guiGraphics.disableScissor();
     }
 
-    private void renderSidebarRow(GuiGraphics guiGraphics, SidebarNodeCache cache, int rowY, int sidebarWidth, int scaledMouseX, int scaledMouseY) {
+    private void renderSidebarRow(GuiGraphics guiGraphics, SidebarNodeCache cache, int rowY, int sidebarWidth, int scaledMouseX, int scaledMouseY, int sidebarViewportBottom) {
         boolean selected = cache.node == selectedRoot;
 
         if (selected) {
             guiGraphics.fill(4, rowY, sidebarWidth - 4, rowY + ScreenMetrics.SIDEBAR_ITEM_HEIGHT, SIDEBAR_SELECTED_FILL);
             guiGraphics.fill(4, rowY, 6, rowY + ScreenMetrics.SIDEBAR_ITEM_HEIGHT, SIDEBAR_SELECTED_ACCENT);
-        } else if (scaledMouseX >= 4 && scaledMouseX <= sidebarWidth - 4 && scaledMouseY >= rowY && scaledMouseY <= rowY + ScreenMetrics.SIDEBAR_ITEM_HEIGHT) {
+        } else if (scaledMouseY <= sidebarViewportBottom && scaledMouseX >= 4 && scaledMouseX <= sidebarWidth - 4
+                && scaledMouseY >= rowY && scaledMouseY <= rowY + ScreenMetrics.SIDEBAR_ITEM_HEIGHT) {
             guiGraphics.fill(4, rowY, sidebarWidth - 4, rowY + ScreenMetrics.SIDEBAR_ITEM_HEIGHT, SIDEBAR_HOVER_FILL);
         }
 
@@ -796,11 +799,11 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         guiGraphics.fill(scrollbarX, thumbY, scrollbarX + ScreenMetrics.SCROLLBAR_WIDTH, thumbY + thumbHeight, thumbColor);
     }
 
-    private void renderHoverTooltip(GuiGraphics guiGraphics, HoverResult hover, int scaledMouseX, int scaledMouseY) {
+    private void renderHoverTooltip(GuiGraphics guiGraphics, HoverResult hover, int mouseX, int mouseY) {
         if (hover.icon() != null) {
-            guiGraphics.renderTooltip(font, hover.icon(), scaledMouseX, scaledMouseY);
+            guiGraphics.renderTooltip(font, hover.icon(), mouseX, mouseY);
         } else if (hover.criterionTag() != null) {
-            guiGraphics.renderTooltip(font, Component.literal(hover.criterionTag()), scaledMouseX, scaledMouseY);
+            guiGraphics.renderTooltip(font, Component.literal(hover.criterionTag()), mouseX, mouseY);
         }
     }
 
@@ -831,6 +834,11 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     }
 
     private boolean handleSidebarClick(double mouseX, double mouseY) {
+        int sidebarViewportBottom = height - ScreenMetrics.SIDEBAR_PROGRESS_HEIGHT;
+        if (mouseY > sidebarViewportBottom) {
+            return false;
+        }
+
         int rowY = ScreenMetrics.SIDEBAR_TOP_PADDING - (int) sidebarScroll;
         for (SidebarNodeCache cache : cachedSidebarNodes) {
             if (mouseY >= rowY && mouseY <= rowY + ScreenMetrics.SIDEBAR_ITEM_HEIGHT) {
