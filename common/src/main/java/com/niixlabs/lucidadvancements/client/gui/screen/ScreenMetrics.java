@@ -27,6 +27,6 @@ public final class ScreenMetrics {
     }
 
     public static int viewportY(boolean searching) {
-        return TOP_BAR_HEIGHT + (searching ? HEADER_HEIGHT_SEARCH : HEADER_HEIGHT_WITH_DESCRIPTION);
+        return TOP_BAR_HEIGHT + HEADER_HEIGHT_WITH_DESCRIPTION;//TOP_BAR_HEIGHT + (searching ? HEADER_HEIGHT_SEARCH : HEADER_HEIGHT_WITH_DESCRIPTION);
     }
 }

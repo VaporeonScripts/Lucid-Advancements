@@ -82,8 +82,8 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
 
     private int totalAdvancements = 0;
     private int completedAdvancements = 0;
-    private int currentTabTotal = 0;
-    private int currentTabCompleted = 0;
+    //private int currentTabTotal = 0;
+    //private int currentTabCompleted = 0;
 
     private boolean draggingMainScrollbar = false;
     private boolean needsRecalculation = true;
@@ -502,20 +502,6 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         maxScroll = Math.max(0, totalCardsHeight - viewportHeight(viewportY));
         scrollOffset = Mth.clamp(scrollOffset, 0, maxScroll);
 
-        this.currentTabTotal = 0;
-        this.currentTabCompleted = 0;
-        if (selectedRoot != null) {
-            for (AdvancementNode node : collectTasks(selectedRoot)) {
-                if (node.holder().value().display().isPresent()) {
-                    this.currentTabTotal++;
-                    AdvancementProgress progress = progressMap.get(node);
-                    if (progress != null && progress.isDone()) {
-                        this.currentTabCompleted++;
-                    }
-                }
-            }
-        }
-
         needsRecalculation = false;
     }
 
@@ -689,29 +675,31 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     }
 
     private void renderContentHeader(GuiGraphics guiGraphics, int contentX, boolean searching) {
-        if (searching) {
-            return;
-        }
+        //if (searching) {
+        //    return;
+        //}
 
         Component headerTitle;
         Component headerDescription;
-        int completed;
-        int total;
 
         if (selectedRoot != null && selectedRoot.holder().value().display().isPresent()) {
             DisplayInfo rootDisplay = selectedRoot.holder().value().display().get();
             headerTitle = rootDisplay.getTitle();
             headerDescription = rootDisplay.getDescription();
-
-            total = currentTabTotal;
-            completed = currentTabCompleted;
         } else if (selectedRoot == null) {
             headerTitle = Component.translatable(Constants.MOD_ID + ".gui.global_category.title");
             headerDescription = Component.translatable(Constants.MOD_ID + ".gui.global_category.desc");
-            total = totalAdvancements;
-            completed = completedAdvancements;
         } else {
             return;
+        }
+
+        int total = cachedCards.size();
+        int completed = 0;
+        for (AdvancementCard card : cachedCards) {
+            AdvancementProgress progress = progressMap.get(card.getNode());
+            if (progress != null && progress.isDone()) {
+                completed++;
+            }
         }
 
         guiGraphics.pose().pushPose();
