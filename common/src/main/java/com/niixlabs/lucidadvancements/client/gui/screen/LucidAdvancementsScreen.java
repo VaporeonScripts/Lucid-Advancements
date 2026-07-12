@@ -1,6 +1,7 @@
 package com.niixlabs.lucidadvancements.client.gui.screen;
 
 import com.niixlabs.lucidadvancements.Constants;
+import com.niixlabs.lucidadvancements.client.cache.TrackedAdvancementsCache;
 import com.niixlabs.lucidadvancements.client.gui.card.AdvancementCard;
 import com.niixlabs.lucidadvancements.client.gui.card.FilterMode;
 import com.niixlabs.lucidadvancements.client.gui.sidebar.SidebarNodeCache;
@@ -104,6 +105,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
             double targetScale = getTargetScale();
             this.width = (int) (minecraft.getWindow().getScreenWidth() / targetScale);
             this.height = (int) (minecraft.getWindow().getScreenHeight() / targetScale);
+            TrackedAdvancementsCache.syncIfNeeded(minecraft);
         }
 
         super.init();
@@ -149,6 +151,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         LucidButton clearTrackedButton = new LucidButton(currentX, 16, clearWidth, 16,
                 Component.translatable(Constants.MOD_ID + ".gui.clear_tracked.label"), btn -> {
             TRACKED_ADVANCEMENTS.clear();
+            TrackedAdvancementsCache.persist();
             needsRecalculation = true;
         });
         addRenderableWidget(clearTrackedButton);
@@ -918,6 +921,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         if (!TRACKED_ADVANCEMENTS.remove(id)) {
             TRACKED_ADVANCEMENTS.add(id);
         }
+        TrackedAdvancementsCache.persist();
         needsRecalculation = true;
     }
 

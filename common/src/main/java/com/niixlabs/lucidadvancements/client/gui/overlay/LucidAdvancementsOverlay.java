@@ -1,6 +1,7 @@
 package com.niixlabs.lucidadvancements.client.gui.overlay;
 
 import com.niixlabs.lucidadvancements.Constants;
+import com.niixlabs.lucidadvancements.client.cache.TrackedAdvancementsCache;
 import com.niixlabs.lucidadvancements.client.gui.access.AdvancementProgressAccess;
 import com.niixlabs.lucidadvancements.client.gui.screen.GuiScale;
 import com.niixlabs.lucidadvancements.client.gui.screen.LucidAdvancementsScreen;
@@ -32,6 +33,7 @@ public final class LucidAdvancementsOverlay {
 
     public static void render(GuiGraphics guiGraphics, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
+        TrackedAdvancementsCache.syncIfNeeded(mc);
 
         if (mc.options.hideGui || mc.player == null || LucidAdvancementsScreen.TRACKED_ADVANCEMENTS.isEmpty()) return;
         if (mc.getConnection() == null || mc.getConnection().getAdvancements() == null) return;
