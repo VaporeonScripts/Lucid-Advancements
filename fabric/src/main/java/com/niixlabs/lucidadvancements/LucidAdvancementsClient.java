@@ -8,6 +8,8 @@ public class LucidAdvancementsClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        CommonClass.init();
+
         HudRenderCallback.EVENT.register((guiGraphics, deltaTracker) -> {
             float partialTick = deltaTracker.getGameTimeDeltaTicks();
             LucidAdvancementsOverlay.render(guiGraphics, partialTick);

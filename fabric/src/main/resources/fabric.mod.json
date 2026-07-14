@@ -13,11 +13,9 @@
   },
   "license": "${license}",
   "icon": "${mod_id}.png",
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
-    "main": [
-      "com.niixlabs.lucidadvancements.LucidAdvancements"
-    ],
+    "main": [],
     "client": [
       "com.niixlabs.lucidadvancements.LucidAdvancementsClient"
     ]
