@@ -137,8 +137,14 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         currentX -= searchWidth;
         searchBox = new EditBox(font, currentX, 16, searchWidth, 16, Component.translatable(Constants.MOD_ID + ".gui.search.placeholder"));
         searchBox.setValue(lastSearchQuery);
+        searchBox.setSuggestion(lastSearchQuery.isEmpty()
+                ? Component.translatable(Constants.MOD_ID + ".gui.search.placeholder").getString()
+                : null);
         searchBox.setResponder(text -> {
             lastSearchQuery = text;
+            searchBox.setSuggestion(text.isEmpty()
+                    ? Component.translatable(Constants.MOD_ID + ".gui.search.placeholder").getString()
+                    : null);
             scrollOffset = 0;
             needsRecalculation = true;
         });
