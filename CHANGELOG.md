@@ -1,3 +1,9 @@
+## v1.2.0.1
+
+* Hotfix > Fixed categories not following their respective data file
+
+---
+
 ## v1.2.0
 
 * Improved config screen by creating more concise entries #27
