@@ -98,13 +98,13 @@ jobs:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
         run: |
-          ./gradlew :fabric:publishCurseforge
-          ./gradlew :forge:publishCurseforge
           ./gradlew :neoforge:publishCurseforge
+          ./gradlew :forge:publishCurseforge
+          ./gradlew :fabric:publishCurseforge
           
-          ./gradlew :fabric:publishModrinth
-          ./gradlew :forge:publishModrinth
           ./gradlew :neoforge:publishModrinth
+          ./gradlew :forge:publishModrinth
+          ./gradlew :fabric:publishModrinth
 
       - name: Create GitHub Release
         if: ${{ inputs.is-release }}
