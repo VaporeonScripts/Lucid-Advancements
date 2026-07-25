@@ -50,7 +50,7 @@ public final class SidebarNodeCache {
                 .map(DisplayInfo::getTitle)
                 .orElse(Component.literal("?"))
                 .getString()
-                : definition.title;
+                : Component.translatable(definition.title).getString();
 
         if (font.width(rawTitle) <= maxTextWidth) {
             return rawTitle;

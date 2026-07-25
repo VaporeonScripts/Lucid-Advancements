@@ -62,6 +62,9 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     private int completedAdvancements = 0;
     private boolean needsRecalculation = true;
 
+    private static final int SIDEBAR_SCROLLBAR_GUTTER = 10;
+    private static final int SIDEBAR_SCROLLBAR_MARGIN = 6;
+
     public LucidAdvancementsScreen(ClientAdvancements clientAdvancements) {
         super(Component.literal("Lucid Advancements"));
         this.clientAdvancements = clientAdvancements;
@@ -295,7 +298,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
             return;
         }
 
-        int maxTextWidth = (int) ((ScreenMetrics.sidebarWidth() - 32) / 0.85f);
+        int maxTextWidth = (int) ((ScreenMetrics.sidebarWidth() - 28 - SIDEBAR_SCROLLBAR_GUTTER) / 0.85f);
 
         rootNodes.sort((a, b) -> {
             String namespaceA = a.holder().id().getNamespace();
@@ -620,7 +623,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         sidebarScroll.updateMaxScroll((cachedSidebarNodes.size() * ScreenMetrics.sidebarRowHeight()) - (viewportBottom - ScreenMetrics.sidebarTopPadding()));
 
         int scissorX2 = (int) Math.round(sidebarWidth / scaleFactor);
-        int scissorY2 = (int) Math.round((height - ScreenMetrics.sidebarProgressHeight()) / scaleFactor);
+        int scissorY2 = (int) Math.round(viewportBottom / scaleFactor);
         guiGraphics.enableScissor(0, 0, scissorX2, scissorY2);
 
         int rowY = ScreenMetrics.sidebarTopPadding() - (int) sidebarScroll.getScrollOffset();
@@ -629,7 +632,6 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
             if (rowY + ScreenMetrics.sidebarRowHeight() > 0 && rowY < viewportBottom) {
                 renderSidebarRow(guiGraphics, cache, rowY, sidebarWidth, scaledMouseX, scaledMouseY, viewportBottom);
                 int iconOffsetY = (ScreenMetrics.sidebarRowHeight() - 16) / 2;
-                //guiGraphics.renderItem(cache.icon, 8, rowY + iconOffsetY);
                 switch (cache.icon) {
                     case ResolvedIcon.Item item -> guiGraphics.renderItem(item.stack(), 8, rowY + iconOffsetY);
                     case ResolvedIcon.Texture tex -> guiGraphics.blit(tex.location(), 8, rowY + iconOffsetY, 0, 0, 16, 16, 16, 16);
@@ -638,23 +640,36 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
             rowY += ScreenMetrics.sidebarRowHeight();
         }
 
+        sidebarScroll.renderScrollbar(guiGraphics, sidebarWidth, SIDEBAR_SCROLLBAR_MARGIN, sidebarViewportY(), sidebarViewportHeight());
+
         guiGraphics.disableScissor();
+    }
+
+    private int sidebarViewportY() {
+        return ScreenMetrics.sidebarTopPadding();
+    }
+
+    private int sidebarViewportHeight() {
+        return (height - ScreenMetrics.sidebarProgressHeight()) - ScreenMetrics.sidebarTopPadding();
     }
 
     private void renderSidebarRow(GuiGraphics guiGraphics, SidebarNodeCache cache, int rowY, int sidebarWidth, int scaledMouseX, int scaledMouseY, int sidebarViewportBottom) {
         boolean selected = cache.node == selectedRoot;
+
+        int rightBound = sidebarWidth - SIDEBAR_SCROLLBAR_GUTTER;
 
         int itemOffsetY = (ScreenMetrics.sidebarRowHeight() - ScreenMetrics.sidebarItemHeight()) / 2;
         int itemStartY = rowY + itemOffsetY;
         int itemEndY = itemStartY + ScreenMetrics.sidebarItemHeight();
 
         if (selected) {
-            guiGraphics.fill(4, itemStartY, sidebarWidth - 4, itemEndY, LucidConfig.screenSidebarSelectedFill);
+            guiGraphics.fill(4, itemStartY, rightBound, itemEndY, LucidConfig.screenSidebarSelectedFill);
             guiGraphics.fill(4, itemStartY, 6, itemEndY, LucidConfig.screenSidebarSelectedAccent);
-        } else if (scaledMouseY <= sidebarViewportBottom && scaledMouseX >= 4 && scaledMouseX <= sidebarWidth - 4
+        } else if (scaledMouseY <= sidebarViewportBottom && scaledMouseX >= 4 && scaledMouseX <= rightBound
                 && scaledMouseY >= itemStartY && scaledMouseY <= itemEndY) {
-            guiGraphics.fill(4, itemStartY, sidebarWidth - 4, itemEndY, LucidConfig.screenSidebarHoverFill);
+            guiGraphics.fill(4, itemStartY, rightBound, itemEndY, LucidConfig.screenSidebarHoverFill);
         }
+
 
         int textOffsetY = (ScreenMetrics.sidebarRowHeight() - 8) / 2;
 
@@ -868,6 +883,11 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
 
     private boolean handleSidebarClick(double mouseX, double mouseY) {
         int sidebarViewportBottom = height - ScreenMetrics.sidebarProgressHeight();
+
+        if (sidebarScroll.handleMouseDown(mouseX, mouseY, ScreenMetrics.sidebarWidth(), SIDEBAR_SCROLLBAR_MARGIN, sidebarViewportY(), sidebarViewportHeight())) {
+            return true;
+        }
+
         if (mouseY > sidebarViewportBottom) {
             return false;
         }
@@ -959,6 +979,10 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         double scaleFactor = getScaleFactor();
         mouseY *= scaleFactor;
 
+        if (sidebarScroll.handleMouseDragged(mouseY, sidebarViewportY(), sidebarViewportHeight())) {
+            return true;
+        }
+
         boolean searching = isSearching();
         int viewportY = ScreenMetrics.viewportY(searching);
         int viewportHeight = viewportHeight(viewportY);
@@ -975,6 +999,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         double scaleFactor = getScaleFactor();
         if (button == 0) {
             mainScroll.setDragging(false);
+            sidebarScroll.setDragging(false);
         }
         return super.mouseReleased(mouseX * scaleFactor, mouseY * scaleFactor, button);
     }

@@ -6,7 +6,7 @@
 * Added per-mod category customization via `/config/lucid-advancements/data/{MOD_ID}.json` (title, description, icon, enabled) #28
 * Added support for custom texture icons in categories, stored in `/config/lucid-advancements/assets/{MOD_ID}/` #28
 * Added a Reload button in the config screen to refresh config, category data and icon cache #28
-* (WIP) Added a scrollbar for the categories sidebar #28
+* Added a scrollbar for the categories sidebar #28
 
 ---
 

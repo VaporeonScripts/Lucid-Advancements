@@ -50,12 +50,16 @@ public class LucidScrollHandler {
         return viewportY + (int) ((scrollOffset / maxScroll) * (viewportHeight - getThumbHeight(viewportHeight)));
     }
 
-    public void renderScrollbar(GuiGraphics guiGraphics, int width, int viewportY, int viewportHeight) {
+    public void renderScrollbar(GuiGraphics guiGraphics, int containerWidth, int viewportY, int viewportHeight) {
+        renderScrollbar(guiGraphics, containerWidth, LucidConfig.screenScrollbarRightMargin, viewportY, viewportHeight);
+    }
+
+    public void renderScrollbar(GuiGraphics guiGraphics, int containerWidth, int rightMargin, int viewportY, int viewportHeight) {
         if (maxScroll <= 0) {
             return;
         }
 
-        int scrollbarX = width - LucidConfig.screenScrollbarRightMargin;
+        int scrollbarX = containerWidth - rightMargin;
         int thumbHeight = getThumbHeight(viewportHeight);
         int thumbY = getThumbY(viewportY, viewportHeight);
 
@@ -64,13 +68,17 @@ public class LucidScrollHandler {
         guiGraphics.fill(scrollbarX, thumbY, scrollbarX + LucidConfig.screenScrollbarWidth, thumbY + thumbHeight, thumbColor);
     }
 
-    public boolean handleMouseDown(double mouseX, double mouseY, int width, int viewportY, int viewportHeight) {
+    public boolean handleMouseDown(double mouseX, double mouseY, int containerWidth, int viewportY, int viewportHeight) {
+        return handleMouseDown(mouseX, mouseY, containerWidth, LucidConfig.screenScrollbarRightMargin, viewportY, viewportHeight);
+    }
+
+    public boolean handleMouseDown(double mouseX, double mouseY, int containerWidth, int rightMargin, int viewportY, int viewportHeight) {
         if (maxScroll <= 0) {
             return false;
         }
 
-        int scrollbarX = width - LucidConfig.screenScrollbarRightMargin;
-        if (mouseX < scrollbarX - 2 || mouseX > scrollbarX + 5) {
+        int scrollbarX = containerWidth - rightMargin;
+        if (mouseX < scrollbarX - 2 || mouseX > scrollbarX + LucidConfig.screenScrollbarWidth + 2) {
             return false;
         }
 
