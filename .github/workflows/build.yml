@@ -1,0 +1,120 @@
+name: Build
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      is-release:
+        description: 'Publish release to Modrinth, Curseforge and Github'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build --build-cache
+
+      - name: Get Mod Version
+        id: get_version
+        run: |
+          VERSION=$(grep -E "^version[ \t]*=" gradle.properties | awk -F= '{print $2}' | tr -d ' "')
+          echo "MOD_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Extract Changelog for Version
+        run: |
+          python3 -c '
+          import re, os
+          
+          version = os.environ.get("MOD_VERSION", "")
+          changelog_path = "CHANGELOG.md"
+          
+          extracted = ""
+          if os.path.exists(changelog_path):
+              with open(changelog_path, "r", encoding="utf-8") as f:
+                  text = f.read().replace("\r\n", "\n")
+          
+              sections = re.split(r"(?m)^---\s*$", text)
+              for sec in sections:
+                  sec_str = sec.strip()
+                  if sec_str.startswith(f"## v{version}") or sec_str.startswith(f"## {version}"):
+                      extracted = re.sub(r"^##\s*v?[^\n]+\n?", "", sec_str).strip()
+                      break
+          
+              if not extracted and sections:
+                  extracted = re.sub(r"^##\s*v?[^\n]+\n?", "", sections[0].strip()).strip()
+          
+          with open("RELEASE_CHANGELOG.md", "w", encoding="utf-8") as f:
+              f.write(extracted)
+          '
+
+      - name: Collect and sanitize artifacts
+        run: |
+          mkdir -p release-artifacts
+          VERSION=${{ env.MOD_VERSION }}
+          
+          copy_clean_jar() {
+            local folder=$1
+            local loader_name=$2
+          
+            for jar in $folder/build/libs/*.jar; do
+              if [[ -f "$jar" && ! "$jar" =~ -(dev|sources|plain|javadoc)\.jar$ ]]; then
+                cp "$jar" "release-artifacts/LucidAdvancements-${loader_name}-${VERSION}.jar"
+              fi
+            done
+          }
+          
+          copy_clean_jar "fabric" "Fabric"
+          copy_clean_jar "forge" "Forge"
+          copy_clean_jar "neoforge" "NeoForge"
+          
+          ls -lh release-artifacts/
+
+      - name: Publish Curseforge & Modrinth
+        if: ${{ inputs.is-release }}
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+        run: |
+          ./gradlew :fabric:publishCurseforge
+          ./gradlew :forge:publishCurseforge
+          ./gradlew :neoforge:publishCurseforge
+          
+          ./gradlew :fabric:publishModrinth
+          ./gradlew :forge:publishModrinth
+          ./gradlew :neoforge:publishModrinth
+
+      - name: Create GitHub Release
+        if: ${{ inputs.is-release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.MOD_VERSION }}
+          name: LucidAdvancements v${{ env.MOD_VERSION }}
+          body_path: RELEASE_CHANGELOG.md
+          files: release-artifacts/*.jar
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
