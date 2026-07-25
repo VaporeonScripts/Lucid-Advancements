@@ -26,6 +26,7 @@
   "lucidadvancements.overlay.hidden_count": "  + %s more...",
 
   "lucidadvancements.gui.config.save_and_exit": "⬅ Save & Back",
+  "lucidadvancements.gui.config.reload": "Reload",
   "lucidadvancements.gui.config.section.general": "GENERAL",
   "lucidadvancements.gui.config.title": "Lucid Advancements Configuration",
 

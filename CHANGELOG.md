@@ -2,6 +2,11 @@
 
 * Improved config screen by creating more concise entries #27
 * Implemented auto-release scripts for Curseforge, Modrinth & Github
+* Changed config file locations to `/config/lucid-advancements/{cache,data,assets}` #28
+* Added per-mod category customization via `/config/lucid-advancements/data/{MOD_ID}.json` (title, description, icon, enabled) #28
+* Added support for custom texture icons in categories, stored in `/config/lucid-advancements/assets/{MOD_ID}/` #28
+* Added a Reload button in the config screen to refresh config, category data and icon cache #28
+* (WIP) Added a scrollbar for the categories sidebar #28
 
 ---
 

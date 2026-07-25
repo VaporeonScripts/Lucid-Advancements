@@ -9,6 +9,9 @@ import com.niixlabs.lucidadvancements.client.gui.sidebar.SidebarNodeCache;
 import com.niixlabs.lucidadvancements.client.gui.util.GuiScale;
 import com.niixlabs.lucidadvancements.client.gui.util.LucidScrollHandler;
 import com.niixlabs.lucidadvancements.config.LucidConfig;
+import com.niixlabs.lucidadvancements.config.category.CategoryAssetInitializer;
+import com.niixlabs.lucidadvancements.config.category.CategoryConfigManager;
+import com.niixlabs.lucidadvancements.config.category.ResolvedIcon;
 import com.niixlabs.lucidadvancements.translation.TranslationExporter;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
@@ -64,6 +67,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         this.clientAdvancements = clientAdvancements;
         if (!configLoaded) {
             LucidConfig.load();
+            CategoryAssetInitializer.ensureGlobalCategoryIcon();
             configLoaded = true;
         }
     }
@@ -311,6 +315,9 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
 
         cachedSidebarNodes.add(new SidebarNodeCache(null, font, maxTextWidth));
         for (AdvancementNode root : rootNodes) {
+            if (!CategoryConfigManager.isEnabled(root.holder().id())) {
+                continue;
+            }
             cachedSidebarNodes.add(new SidebarNodeCache(root, font, maxTextWidth));
         }
     }
@@ -324,6 +331,7 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     @Override
     public void onAddAdvancementRoot(AdvancementNode node) {
         if (node.root() == node && node.holder().value().display().isPresent() && !rootNodes.contains(node)) {
+            CategoryConfigManager.ensureCategoryFor(node);
             rootNodes.add(node);
             rebuildSidebarCache();
             recalculateGlobalStats();
@@ -407,6 +415,9 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         totalAdvancements = 0;
         completedAdvancements = 0;
         for (AdvancementNode root : rootNodes) {
+            if (!CategoryConfigManager.isEnabled(root.holder().id())) {
+                continue;
+            }
             for (AdvancementNode node : collectTasks(root)) {
                 if (node.holder().value().display().isPresent()) {
                     AdvancementProgress progress = progressMap.get(node);
@@ -507,6 +518,9 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
         List<AdvancementNode> nodes = new ArrayList<>();
         if (searching || selectedRoot == null) {
             for (AdvancementNode root : rootNodes) {
+                if (!CategoryConfigManager.isEnabled(root.holder().id())) {
+                    continue;
+                }
                 nodes.addAll(collectTasks(root));
             }
         } else {
@@ -615,7 +629,11 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
             if (rowY + ScreenMetrics.sidebarRowHeight() > 0 && rowY < viewportBottom) {
                 renderSidebarRow(guiGraphics, cache, rowY, sidebarWidth, scaledMouseX, scaledMouseY, viewportBottom);
                 int iconOffsetY = (ScreenMetrics.sidebarRowHeight() - 16) / 2;
-                guiGraphics.renderItem(cache.icon, 8, rowY + iconOffsetY);
+                //guiGraphics.renderItem(cache.icon, 8, rowY + iconOffsetY);
+                switch (cache.icon) {
+                    case ResolvedIcon.Item item -> guiGraphics.renderItem(item.stack(), 8, rowY + iconOffsetY);
+                    case ResolvedIcon.Texture tex -> guiGraphics.blit(tex.location(), 8, rowY + iconOffsetY, 0, 0, 16, 16, 16, 16);
+                }
             }
             rowY += ScreenMetrics.sidebarRowHeight();
         }
@@ -985,6 +1003,23 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    public void refreshCategoryData() {
+        for (AdvancementNode root : rootNodes) {
+            CategoryConfigManager.ensureCategoryFor(root);
+        }
+
+        if (selectedRoot != null && !CategoryConfigManager.isEnabled(selectedRoot.holder().id())) {
+            selectedRoot = null;
+            lastSelectedTabId = null;
+            clientAdvancements.setSelectedTab(null, true);
+            mainScroll.setScrollOffset(0);
+        }
+
+        rebuildSidebarCache();
+        recalculateGlobalStats();
+        needsRecalculation = true;
     }
 
     private record HoverResult(@Nullable ItemStack icon, @Nullable String criterionTag) {

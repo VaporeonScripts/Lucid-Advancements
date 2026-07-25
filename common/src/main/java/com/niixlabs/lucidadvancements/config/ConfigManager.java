@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class ConfigManager {
-    private static final String FILE_NAME = "config/lucidadvancements.properties";
+    private static final String FILE_NAME = "config/lucid-advancements/lucidadvancements.properties";
     private static final String HEADER = "# Lucid Advancements Configuration File\n# Colors use ARGB Hexadecimal format (e.g., 0xAARRGGBB)\n\n";
 
     private static long lastKnownModified = 0;
