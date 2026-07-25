@@ -1,11 +1,13 @@
 package com.niixlabs.lucidadvancements.client.gui.config;
 
 import com.niixlabs.lucidadvancements.Constants;
+import com.niixlabs.lucidadvancements.client.gui.screen.LucidAdvancementsScreen;
 import com.niixlabs.lucidadvancements.client.gui.util.GuiScale;
 import com.niixlabs.lucidadvancements.client.gui.util.LucidScrollHandler;
 import com.niixlabs.lucidadvancements.config.ConfigOption;
 import com.niixlabs.lucidadvancements.config.ConfigSection;
 import com.niixlabs.lucidadvancements.config.LucidConfig;
+import com.niixlabs.lucidadvancements.config.category.CategoryConfigManager;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -20,6 +22,9 @@ public class LucidConfigScreen extends Screen {
     private static final int BACK_BUTTON_WIDTH = 90;
     private static final int BACK_BUTTON_HEIGHT = 18;
     private static final int BACK_BUTTON_Y = 16;
+
+    private static final int RELOAD_BUTTON_WIDTH = 90;
+    private static final int RELOAD_BUTTON_GAP = 6;
 
     private final Screen previousScreen;
     private final LucidScrollHandler mainScroll = new LucidScrollHandler();
@@ -138,19 +143,28 @@ public class LucidConfigScreen extends Screen {
         guiGraphics.drawString(font, Component.translatable(Constants.MOD_ID + ".gui.config.title"), sidebarWidth + LucidConfig.screenContentMargin, 20, LucidConfig.screenHeaderTitleColor, true);
 
         int backX = width - LucidConfig.screenContentMargin - BACK_BUTTON_WIDTH;
-        boolean hovered = scaledMouseX >= backX && scaledMouseX <= backX + BACK_BUTTON_WIDTH
+        renderTopBarButton(guiGraphics, backX, scaledMouseX, scaledMouseY,
+                Constants.MOD_ID + ".gui.config.save_and_exit", BACK_BUTTON_WIDTH);
+
+        int reloadX = backX - RELOAD_BUTTON_GAP - RELOAD_BUTTON_WIDTH;
+        renderTopBarButton(guiGraphics, reloadX, scaledMouseX, scaledMouseY,
+                Constants.MOD_ID + ".gui.config.reload", RELOAD_BUTTON_WIDTH);
+    }
+
+    private void renderTopBarButton(GuiGraphics guiGraphics, int buttonX, int scaledMouseX, int scaledMouseY, String translationKey, int buttonWidth) {
+        boolean hovered = scaledMouseX >= buttonX && scaledMouseX <= buttonX + buttonWidth
                 && scaledMouseY >= BACK_BUTTON_Y && scaledMouseY <= BACK_BUTTON_Y + BACK_BUTTON_HEIGHT;
 
         int bgColor = hovered ? LucidConfig.widgetBackgroundHovered : LucidConfig.widgetBackgroundIdle;
         int borderColor = hovered ? LucidConfig.widgetBorderHovered : LucidConfig.widgetBorderIdle;
 
-        guiGraphics.fill(backX, BACK_BUTTON_Y, backX + BACK_BUTTON_WIDTH, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT, bgColor);
-        guiGraphics.fill(backX, BACK_BUTTON_Y, backX + BACK_BUTTON_WIDTH, BACK_BUTTON_Y + 1, borderColor);
-        guiGraphics.fill(backX, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT - 1, backX + BACK_BUTTON_WIDTH, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT, borderColor);
-        guiGraphics.fill(backX, BACK_BUTTON_Y, backX + 1, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT, borderColor);
-        guiGraphics.fill(backX + BACK_BUTTON_WIDTH - 1, BACK_BUTTON_Y, backX + BACK_BUTTON_WIDTH, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT, borderColor);
+        guiGraphics.fill(buttonX, BACK_BUTTON_Y, buttonX + buttonWidth, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT, bgColor);
+        guiGraphics.fill(buttonX, BACK_BUTTON_Y, buttonX + buttonWidth, BACK_BUTTON_Y + 1, borderColor);
+        guiGraphics.fill(buttonX, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT - 1, buttonX + buttonWidth, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT, borderColor);
+        guiGraphics.fill(buttonX, BACK_BUTTON_Y, buttonX + 1, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT, borderColor);
+        guiGraphics.fill(buttonX + buttonWidth - 1, BACK_BUTTON_Y, buttonX + buttonWidth, BACK_BUTTON_Y + BACK_BUTTON_HEIGHT, borderColor);
 
-        guiGraphics.drawCenteredString(font, Component.translatable(Constants.MOD_ID + ".gui.config.save_and_exit"), backX + BACK_BUTTON_WIDTH / 2, BACK_BUTTON_Y + 5, hovered ? LucidConfig.widgetTextHovered : LucidConfig.widgetTextIdle);
+        guiGraphics.drawCenteredString(font, Component.translatable(translationKey), buttonX + buttonWidth / 2, BACK_BUTTON_Y + 5, hovered ? LucidConfig.widgetTextHovered : LucidConfig.widgetTextIdle);
     }
 
     private void renderSidebar(GuiGraphics guiGraphics, double scaleFactor, int scaledMouseX, int scaledMouseY) {
@@ -243,6 +257,12 @@ public class LucidConfigScreen extends Screen {
         if (mouseX >= backX && mouseX <= backX + BACK_BUTTON_WIDTH && mouseY >= BACK_BUTTON_Y && mouseY <= BACK_BUTTON_Y + BACK_BUTTON_HEIGHT) {
             saveAll();
             if (minecraft != null) minecraft.setScreen(previousScreen);
+            return true;
+        }
+
+        int reloadX = backX - RELOAD_BUTTON_GAP - RELOAD_BUTTON_WIDTH;
+        if (mouseX >= reloadX && mouseX <= reloadX + RELOAD_BUTTON_WIDTH && mouseY >= BACK_BUTTON_Y && mouseY <= BACK_BUTTON_Y + BACK_BUTTON_HEIGHT) {
+            reloadEverything();
             return true;
         }
 
@@ -414,11 +434,14 @@ public class LucidConfigScreen extends Screen {
         }
 
         public void renderLabel(GuiGraphics guiGraphics, Font font) {
-            guiGraphics.drawString(font, name, x + 10, y + 6, LucidConfig.widgetTextIdle, true);
-            if (!comment.isEmpty()) {
+            String formattedName = Component.translatable(Constants.MOD_ID + ".gui.config." + name + ".name").getString();
+            String formattedDesc = Component.translatable(Constants.MOD_ID + ".gui.config." + name + ".desc").getString();
+
+            guiGraphics.drawString(font, formattedName, x + 10, y + 6, LucidConfig.widgetTextIdle, true);
+            if (!formattedDesc.isEmpty()) {
                 guiGraphics.pose().pushPose();
                 guiGraphics.pose().scale(0.8f, 0.8f, 1.0f);
-                guiGraphics.drawString(font, comment, (int) ((x + 10) / 0.8f), (int) ((y + 18) / 0.8f), 0xFFAAAAAA, true);
+                guiGraphics.drawString(font, formattedDesc, (int) ((x + 10) / 0.8f), (int) ((y + 18) / 0.8f), 0xFFAAAAAA, true);
                 guiGraphics.pose().popPose();
             }
         }
@@ -595,6 +618,20 @@ public class LucidConfigScreen extends Screen {
                 field.setBoolean(null, value);
                 LucidConfig.updateAndSave(field.getName(), value);
             } catch (Exception ignored) {}
+        }
+    }
+
+
+    private void reloadEverything() {
+        LucidConfig.load();
+        CategoryConfigManager.reloadAll();
+
+        if (previousScreen instanceof LucidAdvancementsScreen advancementsScreen) {
+            advancementsScreen.refreshCategoryData();
+        }
+
+        if (minecraft != null) {
+            minecraft.setScreen(new LucidConfigScreen(previousScreen));
         }
     }
 }
