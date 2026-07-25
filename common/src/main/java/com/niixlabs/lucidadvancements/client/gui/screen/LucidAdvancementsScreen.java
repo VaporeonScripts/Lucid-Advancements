@@ -11,6 +11,7 @@ import com.niixlabs.lucidadvancements.client.gui.util.LucidScrollHandler;
 import com.niixlabs.lucidadvancements.config.LucidConfig;
 import com.niixlabs.lucidadvancements.config.category.CategoryAssetInitializer;
 import com.niixlabs.lucidadvancements.config.category.CategoryConfigManager;
+import com.niixlabs.lucidadvancements.config.category.CategoryDefinition;
 import com.niixlabs.lucidadvancements.config.category.ResolvedIcon;
 import com.niixlabs.lucidadvancements.translation.TranslationExporter;
 import net.minecraft.advancements.AdvancementHolder;
@@ -719,8 +720,19 @@ public final class LucidAdvancementsScreen extends Screen implements ClientAdvan
 
         if (selectedRoot != null && selectedRoot.holder().value().display().isPresent()) {
             DisplayInfo rootDisplay = selectedRoot.holder().value().display().get();
-            headerTitle = rootDisplay.getTitle();
-            headerDescription = rootDisplay.getDescription();
+            CategoryDefinition def = CategoryConfigManager.resolve(selectedRoot.holder().id()).orElse(null);
+
+            if (def != null && def.title != null && !def.title.isEmpty()) {
+                headerTitle = !def.title.contains("%") ? Component.translatable(def.title) : Component.literal(def.title);
+            } else {
+                headerTitle = rootDisplay.getTitle();
+            }
+
+            if (def != null && def.description != null && !def.description.isEmpty()) {
+                headerDescription = !def.description.contains("%") ? Component.translatable(def.description) : Component.literal(def.description);
+            } else {
+                headerDescription = rootDisplay.getDescription();
+            }
         } else if (selectedRoot == null) {
             headerTitle = Component.translatable(Constants.MOD_ID + ".gui.global_category.title");
             headerDescription = Component.translatable(Constants.MOD_ID + ".gui.global_category.desc");
